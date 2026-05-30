@@ -220,7 +220,7 @@ include __DIR__ . '/../../includes/sidebar.php';
 .stat-card {
   background: var(--card); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 1.1rem 1.2rem;
-  display: flex; align-items: center; gap: .85rem;
+  display: flex; flex-direction: column; align-items: flex-start; gap: .75rem;
   box-shadow: var(--shadow);
   transition: transform .15s, box-shadow .15s;
 }
@@ -382,8 +382,7 @@ include __DIR__ . '/../../includes/sidebar.php';
 }
 .ann-body {
   font-size: .72rem; color: var(--text2); line-height: 1.55;
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
+  word-break: break-word;
 }
 .ann-date {
   font-size: .63rem; color: var(--text3);
@@ -437,10 +436,34 @@ include __DIR__ . '/../../includes/sidebar.php';
   .hero-actions { flex-direction: column; align-items: stretch; }
   .btn-ghost-white, .btn-white { text-align: center; justify-content: center; }
 }
+
+/* Mobile topbar fallback — shows hamburger when topbar.php doesn't supply one */
+.ad-mobile-bar {
+  display: none;
+  align-items: center;
+  padding: .6rem 1rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+@media (max-width: 900px) {
+  .ad-mobile-bar { display: flex; }
+}
+
 </style>
 
 <div class="main-content ad-wrap">
-<?php include __DIR__ . '/../../includes/topbar.php'; ?>
+<div class="ad-mobile-bar">
+  <button class="sidebar-toggle" id="sidebarToggle"
+          type="button"
+          aria-label="Open navigation"
+          aria-expanded="false"
+          aria-controls="appSidebar">
+    <i class="fa-solid fa-bars" aria-hidden="true"></i>
+  </button>
+</div>
 <div class="ad-body">
 
   <?php $flash = get_flash('success'); if ($flash): ?>

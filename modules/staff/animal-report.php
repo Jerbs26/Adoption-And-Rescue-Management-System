@@ -175,14 +175,17 @@ include __DIR__ . '/../../includes/sidebar.php';
 /* ── Summary cards ── */
 .ar-summary {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.75rem;
 }
+@media (min-width: 640px) {
+    .ar-summary { grid-template-columns: repeat(4, 1fr); }
+}
 .ar-stat {
-    background: var(--card-bg, #fff);
+    background: var(--card, #fff);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg, 14px);
+    border-radius: 14px;
     padding: 1.1rem 1.25rem;
     display: flex;
     flex-direction: column;
@@ -201,9 +204,9 @@ include __DIR__ . '/../../includes/sidebar.php';
     color: var(--muted-fg);
     font-weight: 600;
 }
-.ar-stat--pending  .ar-stat__value { color: var(--warning-fg,  #b45309); }
-.ar-stat--ack      .ar-stat__value { color: var(--success-fg,  #166534); }
-.ar-stat--rescued  .ar-stat__value { color: var(--info-fg,     #1d4ed8); }
+.ar-stat--pending  .ar-stat__value { color: var(--warning,  #b45309); }
+.ar-stat--ack      .ar-stat__value { color: var(--success,  #166534); }
+.ar-stat--rescued  .ar-stat__value { color: var(--info,     #1d4ed8); }
 
 /* ── Filter bar ── */
 .ar-filters {
@@ -243,25 +246,39 @@ include __DIR__ . '/../../includes/sidebar.php';
 .ar-table tbody tr:last-child td { border-bottom: none; }
 .ar-table tbody tr:hover { background: hsla(35,55%,92%,.25); }
 
-/* ── Photo thumb ── */
+/* ── Pet hero cell (desktop) ── */
+.td-pet-hero {
+    display: flex !important;
+    align-items: center;
+    gap: .75rem;
+}
 .ar-thumb {
-    width: 52px;
+    width: 56px;
     height: 52px;
     object-fit: cover;
     border-radius: 8px;
     display: block;
     border: 1px solid var(--border);
     cursor: pointer;
+    flex-shrink: 0;
     transition: opacity .15s;
 }
 .ar-thumb:hover { opacity: .8; }
 .ar-thumb-placeholder {
-    width: 52px; height: 52px;
+    width: 56px; height: 52px;
     border-radius: 8px;
     background: var(--muted);
     display: flex; align-items: center; justify-content: center;
     color: var(--muted-fg); font-size: .85rem;
+    flex-shrink: 0;
 }
+.ar-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+}
+.ar-hero-id { font-size: .78rem; }
+.ar-hero-type { font-size: .88rem; font-weight: 600; }
 
 /* ── Status form ── */
 .ar-status-form {
@@ -347,6 +364,121 @@ include __DIR__ . '/../../includes/sidebar.php';
     transition: background .15s;
 }
 .ar-modal-close:hover { background: rgba(255,255,255,.3); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .ar-filters .form-control,
+    .ar-filters .form-control.search-input {
+        max-width: 100%;
+        width: 100%;
+    }
+    .ar-filters button,
+    .ar-filters a.btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 640px) {
+    /* Table → card transform (matches users.php) */
+    .ar-table-wrap table thead { display: none !important; }
+
+    .ar-table-wrap table,
+    .ar-table-wrap tbody,
+    .ar-table-wrap tr,
+    .ar-table-wrap td {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Each row = a card */
+    .ar-table-wrap tbody tr {
+        background: var(--card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 12px !important;
+        margin: 0 0 .75rem !important;
+        padding: 12px 14px 6px !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+    }
+
+    /* Each cell: label (::before) + value side-by-side */
+    .ar-table-wrap td {
+        padding: 8px 14px !important;
+        font-size: .88rem !important;
+        white-space: normal !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        border-bottom: 1px solid var(--border) !important;
+        min-height: 0 !important;
+    }
+    .ar-table-wrap td:last-child { border-bottom: none !important; }
+
+    /* data-label pseudo labels */
+    .ar-table-wrap td::before {
+        content: attr(data-label);
+        font-size: .68rem !important;
+        font-weight: 700 !important;
+        letter-spacing: .06em !important;
+        text-transform: uppercase !important;
+        color: var(--muted-fg) !important;
+        min-width: 96px !important;
+        max-width: 96px !important;
+        flex-shrink: 0 !important;
+        padding-top: 2px !important;
+    }
+
+    /* Hero cell — full-bleed photo card (matches pets.php) */
+    .ar-table-wrap td:first-child {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0 !important;
+        padding: 0 0 10px !important;
+        border-bottom: 2px solid var(--border) !important;
+    }
+    .ar-table-wrap td:first-child::before { display: none !important; }
+
+    /* Full-bleed photo */
+    .ar-thumb {
+        width: 100% !important;
+        height: 200px !important;
+        border-radius: 14px 14px 0 0 !important;
+        object-fit: cover !important;
+        object-position: center !important;
+        border: none !important;
+        flex-shrink: unset !important;
+    }
+    /* Placeholder full-bleed */
+    .ar-thumb-placeholder--hero {
+        width: 100% !important;
+        height: 120px !important;
+        border-radius: 14px 14px 0 0 !important;
+        font-size: 2rem !important;
+        flex-shrink: unset !important;
+    }
+    /* Hero info row below photo */
+    .ar-hero-info {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: .5rem !important;
+        padding: 8px 14px 2px !important;
+        width: 100% !important;
+    }
+    .ar-hero-type { font-size: 1rem !important; font-weight: 700 !important; }
+
+    /* Status form: full-width on mobile */
+    .ar-status-form { flex-direction: column !important; width: 100% !important; }
+    .ar-status-form select { width: 100% !important; font-size: 1rem !important; }
+    .ar-status-form button { width: 100% !important; justify-content: center !important; }
+
+    /* Last td (actions): no label */
+    .ar-table-wrap td.td-action::before { display: none !important; }
+    .ar-table-wrap td.td-action { padding-top: 10px !important; }
+
+    /* Modal */
+    .ar-modal-backdrop { padding: 0; align-items: flex-end; }
+    .ar-modal-img { max-width: 100vw; max-height: 85vh; border-radius: 12px 12px 0 0; }
+}
 </style>
 
 <div class="main-content">
@@ -435,9 +567,7 @@ include __DIR__ . '/../../includes/sidebar.php';
             <table class="ar-table">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Photo</th>
-                        <th>Animal</th>
+                        <th>Pet</th>
                         <th>Location</th>
                         <th>Description</th>
                         <th>Reported By</th>
@@ -447,9 +577,9 @@ include __DIR__ . '/../../includes/sidebar.php';
                 </thead>
                 <tbody>
                 <?php foreach ($reports as $r): ?>
+                <?php $icon = $r['animal_type'] === 'Dog' ? 'fa-dog' : 'fa-cat'; ?>
                 <tr>
-                    <td class="muted small"><?= (int)$r['id'] ?></td>
-                    <td>
+                    <td class="td-pet-hero">
                         <?php if ($r['proof_photo']): ?>
                         <img
                             src="<?= e($reportUploadUrl . rawurlencode($r['proof_photo'])) ?>"
@@ -459,32 +589,31 @@ include __DIR__ . '/../../includes/sidebar.php';
                             title="Click to enlarge"
                         >
                         <?php else: ?>
-                        <div class="ar-thumb-placeholder">
+                        <div class="ar-thumb-placeholder ar-thumb-placeholder--hero">
                             <i class="fa-solid fa-image"></i>
                         </div>
                         <?php endif; ?>
+                        <div class="ar-hero-info">
+                            <span class="ar-hero-type">
+                                <?= e($r['animal_type']) ?>
+                            </span>
+                        </div>
                     </td>
-                    <td>
-                        <?php
-                        $icon = $r['animal_type'] === 'Dog' ? 'fa-dog' : 'fa-cat';
-                        echo '<i class="fa-solid ' . $icon . '" style="margin-right:.3rem"></i>' . e($r['animal_type']);
-                        ?>
-                    </td>
-                    <td class="muted small" style="max-width:160px;word-break:break-word">
+                    <td class="muted small" data-label="Location">
                         <?= e($r['location']) ?>
                     </td>
-                    <td class="muted small" style="max-width:200px">
+                    <td class="muted small" data-label="Description" style="max-width:200px">
                         <?= e(mb_strimwidth($r['status_desc'], 0, 80, '…')) ?>
                     </td>
-                    <td style="white-space:nowrap">
+                    <td data-label="Reported By">
                         <div style="font-size:.85rem;font-weight:600"><?= e($r['adopter_name']) ?></div>
                         <div class="muted small"><?= e($r['adopter_email']) ?></div>
                     </td>
-                    <td class="muted small" style="white-space:nowrap">
+                    <td class="muted small" data-label="Submitted">
                         <?= date('M j, Y', strtotime($r['created_at'])) ?><br>
                         <span style="font-size:.72rem"><?= date('g:i A', strtotime($r['created_at'])) ?></span>
                     </td>
-                    <td>
+                    <td class="td-action">
                         <form method="post" class="ar-status-form">
                             <?= csrf_field() ?>
                             <input type="hidden" name="report_id" value="<?= (int)$r['id'] ?>">

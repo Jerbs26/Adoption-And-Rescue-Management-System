@@ -74,7 +74,7 @@ include __DIR__ . '/../includes/head.php';
 ?>
 
 <section class="section-warm">
-  <div class="container" style="padding:1.25rem 0 1rem">
+  <div class="container" style="padding-top:.75rem;padding-bottom:.75rem">
     <h1 style="font-size:1.5rem;margin-bottom:.3rem">Adoption Application</h1>
     <p class="muted" style="max-width:34rem;font-size:.85rem;margin:0">
       <?= $pet ? 'You are applying to adopt <strong>' . e($pet['name']) . '</strong>. We will be in touch within 2 business days.' : 'Tell us about yourself and the pet you have in mind.' ?>
@@ -82,7 +82,7 @@ include __DIR__ . '/../includes/head.php';
   </div>
 </section>
 
-<section class="container" style="padding:2.5rem 0 4rem">
+<section class="container" style="padding-top:2.5rem;padding-bottom:4rem">
 
 <?php if ($alreadyApplied): ?>
   <div class="form-card center">

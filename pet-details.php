@@ -62,6 +62,7 @@ if ($isDashboard) {
     include __DIR__ . '/includes/head.php';
     include __DIR__ . '/includes/header.php';
 }
+// NOTE: topbar.php is included inside the layout block below (dashboard only)
 
 // Back link destination
 $backLink = $isDashboard
@@ -71,6 +72,7 @@ $backLink = $isDashboard
 
 <?php if ($isDashboard): ?>
 <style>
+/* ── Pet Details — Dashboard layout ─────────────────────────── */
 .pd-wrap {
   --warm-bg: #fdf8f3;
   --card-bg: #ffffff;
@@ -86,6 +88,7 @@ $backLink = $isDashboard
   background: var(--warm-bg);
   min-height: 100vh;
 }
+/* Back link */
 .pd-back {
   display: inline-flex; align-items: center; gap: .5rem;
   color: var(--text-mid); text-decoration: none; font-size: .85rem;
@@ -93,42 +96,67 @@ $backLink = $isDashboard
   transition: color .15s;
 }
 .pd-back:hover { color: var(--green); }
+
+/* Two-column layout — collapses to single on tablet */
 .pd-grid {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 2rem; align-items: start;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
 }
-@media(max-width:768px){ .pd-grid { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .pd-grid { grid-template-columns: 1fr; gap: 1.5rem; } }
+
+/* Main image — consistent aspect ratio instead of fixed max-height */
 .pd-main-img {
-  width: 100%; border-radius: var(--radius);
-  object-fit: cover; max-height: 420px;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius);
+  object-fit: cover;
+  display: block;
 }
+@media (max-width: 480px) { .pd-main-img { border-radius: 10px; } }
+
+/* Thumbnail strip */
 .pd-thumbs {
   display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap;
 }
 .pd-thumbs img {
-  width: 70px; height: 58px; object-fit: cover;
+  width: 64px; height: 52px; object-fit: cover;
   border-radius: 8px; cursor: pointer;
-  border: 2px solid transparent; transition: border-color .15s;
+  border: 2px solid transparent;
+  transition: border-color .15s, opacity .15s;
+  flex-shrink: 0;
 }
+.pd-thumbs img:hover { opacity: .85; }
 .pd-thumbs img.active { border-color: var(--green); }
+@media (max-width: 380px) {
+  .pd-thumbs img { width: 54px; height: 44px; }
+}
+
+/* Name row */
 .pd-name-row {
   display: flex; align-items: center; gap: .75rem;
   margin-bottom: .25rem; flex-wrap: wrap;
 }
 .pd-name-row h1 {
-  font-size: 2rem; font-weight: 900;
-  color: var(--text-dark); margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 900; color: var(--text-dark); margin: 0;
 }
 .pd-breed {
   color: var(--text-mid); font-size: 1rem; margin-bottom: 1.25rem;
 }
+
+/* Facts grid */
 .pd-facts {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: .6rem; margin-bottom: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .6rem;
+  margin-bottom: 1.25rem;
 }
+@media (max-width: 380px) { .pd-facts { grid-template-columns: 1fr; } }
 .pd-fact {
   background: #f5f0ea; border-radius: 10px;
-  padding: .7rem .9rem;
+  padding: .7rem .9rem; min-width: 0; /* prevent overflow */
 }
 .pd-fact dt {
   font-size: .68rem; font-weight: 800; letter-spacing: .1em;
@@ -136,8 +164,11 @@ $backLink = $isDashboard
   margin-bottom: .2rem;
 }
 .pd-fact dd {
-  font-size: .92rem; font-weight: 700; color: var(--text-dark);
+  font-size: .9rem; font-weight: 700; color: var(--text-dark);
+  word-break: break-word;
 }
+
+/* Trait badges */
 .pd-checks {
   display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: 1.5rem;
 }
@@ -146,15 +177,31 @@ $backLink = $isDashboard
   font-size: .78rem; font-weight: 600;
   padding: .35rem .8rem; border-radius: 50px;
   background: #e6f4ee; color: #2e7d52;
+  white-space: nowrap;
 }
 .pd-check.no { background: #fdecea; color: #b91c1c; }
-.pd-check i { font-size: .75rem; }
+.pd-check i { font-size: .75rem; flex-shrink: 0; }
+
+/* About section */
 .pd-about h2 {
-  font-size: 1.1rem; font-weight: 800;
+  font-size: 1.05rem; font-weight: 800;
   color: var(--text-dark); margin-bottom: .5rem;
 }
-.pd-about p { font-size: .88rem; color: var(--text-mid); line-height: 1.7; }
-.pd-actions { display: flex; gap: .75rem; margin-top: 1.75rem; flex-wrap: wrap; }
+.pd-about p {
+  font-size: .88rem; color: var(--text-mid); line-height: 1.75;
+  word-break: break-word;
+}
+
+/* Action buttons */
+.pd-actions {
+  display: flex; gap: .75rem; margin-top: 1.75rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 480px) {
+  .pd-actions { flex-direction: column; }
+  .pd-actions .pd-btn-adopt,
+  .pd-actions .pd-btn-back { width: 100%; justify-content: center; }
+}
 .pd-btn-adopt {
   background: var(--orange); color: #fff;
   border: none; border-radius: 50px;
@@ -163,10 +210,12 @@ $backLink = $isDashboard
   display: inline-flex; align-items: center; gap: .5rem;
   box-shadow: 0 2px 10px rgba(232,114,42,.3);
   transition: opacity .15s, transform .15s;
+  white-space: nowrap;
 }
-.pd-btn-adopt:hover { opacity: .9; transform: translateY(-1px); }
+.pd-btn-adopt:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); }
 .pd-btn-adopt:disabled {
-  background: #d0ccc7; box-shadow: none; cursor: not-allowed; transform: none;
+  background: #d0ccc7; box-shadow: none; cursor: not-allowed;
+  opacity: .7; transform: none; pointer-events: none;
 }
 .pd-btn-back {
   background: transparent; color: var(--text-mid);
@@ -174,30 +223,47 @@ $backLink = $isDashboard
   padding: .75rem 1.5rem; font-size: .9rem; font-weight: 600;
   text-decoration: none; display: inline-flex; align-items: center; gap: .5rem;
   transition: border-color .15s, color .15s;
+  white-space: nowrap;
 }
 .pd-btn-back:hover { border-color: var(--green); color: var(--green); }
+
+/* Medical records */
 .pd-records { margin-top: 2.5rem; }
 .pd-records h2 {
-  font-size: 1.1rem; font-weight: 800;
+  font-size: 1.05rem; font-weight: 800;
   color: var(--text-dark); margin-bottom: .9rem;
 }
 .pd-record {
   background: var(--card-bg); border: 1px solid var(--border);
   border-radius: 10px; padding: .9rem 1.1rem;
-  margin-bottom: .6rem; display: flex;
-  justify-content: space-between; align-items: flex-start; gap: 1rem;
+  margin-bottom: .6rem;
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 1rem;
+}
+/* Stack record rows on very small screens */
+@media (max-width: 480px) {
+  .pd-record { flex-direction: column; gap: .4rem; }
+  .pd-record-date { text-align: left; }
 }
 .pd-record-type {
   font-size: .7rem; font-weight: 800; letter-spacing: .1em;
   text-transform: uppercase; color: var(--green);
   margin-bottom: .2rem;
 }
-.pd-record-desc { font-size: .88rem; font-weight: 700; color: var(--text-dark); }
-.pd-record-vet { font-size: .78rem; color: var(--text-light); margin-top: .15rem; }
-.pd-record-date { font-size: .78rem; color: var(--text-light); text-align: right; flex-shrink: 0; }
+.pd-record-desc { font-size: .88rem; font-weight: 700; color: var(--text-dark); word-break: break-word; }
+.pd-record-vet  { font-size: .78rem; color: var(--text-light); margin-top: .15rem; word-break: break-word; }
+.pd-record-date { font-size: .78rem; color: var(--text-light); text-align: right; flex-shrink: 0; white-space: nowrap; }
+
+/* Touch targets on mobile */
+@media (hover: none) and (pointer: coarse) {
+  .pd-btn-adopt,
+  .pd-btn-back { min-height: 48px; }
+  .pd-thumbs img { min-width: 48px; min-height: 48px; }
+}
 </style>
 
 <div class="main-content pd-wrap">
+<?php include __DIR__ . '/includes/topbar.php'; ?>
 <div class="main-body">
 
   <a class="pd-back" href="<?= $backLink ?>">
@@ -324,8 +390,8 @@ $backLink = $isDashboard
 
 <?php else: ?>
 
-<!-- Public layout (guest / non-adopter) — unchanged -->
-<section class="container" style="padding:2.5rem 0 4rem">
+<!-- Public layout (guest / non-adopter) -->
+<section class="container section-sm" style="padding-bottom:4rem">
   <a class="back-link" href="<?= $backLink ?>"><i class="fa-solid fa-arrow-left"></i> Back to all pets</a>
 
   <div class="details">
@@ -334,10 +400,10 @@ $backLink = $isDashboard
         <img src="<?= e(pet_image_url($pet['primary_image'])) ?>" alt="<?= e($pet['name']) ?>" id="mainImg">
       </div>
       <?php if ($images): ?>
-      <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap">
-        <img src="<?= e(pet_image_url($pet['primary_image'])) ?>" alt="Main" class="thumb-img active" style="width:72px;height:60px;object-fit:cover;border-radius:.5rem;cursor:pointer;border:2px solid var(--primary)">
+      <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;max-width:100%">
+        <img src="<?= e(pet_image_url($pet['primary_image'])) ?>" alt="Main" class="thumb-img active" style="width:68px;height:56px;object-fit:cover;border-radius:.5rem;cursor:pointer;border:2px solid var(--primary);flex-shrink:0">
         <?php foreach ($images as $img): ?>
-        <img src="<?= e(pet_image_url($img['image_path'])) ?>" alt="<?= e($pet['name']) ?>" class="thumb-img" style="width:72px;height:60px;object-fit:cover;border-radius:.5rem;cursor:pointer;border:2px solid transparent">
+        <img src="<?= e(pet_image_url($img['image_path'])) ?>" alt="<?= e($pet['name']) ?>" class="thumb-img" style="width:68px;height:56px;object-fit:cover;border-radius:.5rem;cursor:pointer;border:2px solid transparent;flex-shrink:0">
         <?php endforeach; ?>
       </div>
       <?php endif; ?>
@@ -401,7 +467,7 @@ $backLink = $isDashboard
       <p class="muted"><?= nl2br(e($pet['description'])) ?></p>
       <?php endif; ?>
 
-      <div style="margin-top:1.75rem">
+      <div style="margin-top:1.75rem;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
         <?php if ($isAvail): ?>
           <?php if ($user): ?>
             <a class="btn btn-accent" href="<?= BASE_URL ?>/pages/apply.php?pet_id=<?= (int)$pet['id'] ?>">
@@ -417,7 +483,7 @@ $backLink = $isDashboard
             <?= $pet['status'] === 'Adopted' ? 'Already Adopted' : 'Currently Not Available' ?>
           </button>
         <?php endif; ?>
-        <a class="btn btn-ghost" href="<?= $backLink ?>" style="margin-left:.5rem">Back to List</a>
+        <a class="btn btn-ghost" href="<?= $backLink ?>">Back to List</a>
       </div>
     </div>
   </div>
@@ -435,7 +501,7 @@ $backLink = $isDashboard
           <div class="muted small">Vet: <?= e($rec['vet_name']) ?><?= $rec['clinic_name'] ? ' &mdash; ' . e($rec['clinic_name']) : '' ?></div>
           <?php endif; ?>
         </div>
-        <div class="muted small" style="text-align:right;flex-shrink:0">
+        <div class="muted small" style="text-align:right;flex-shrink:0;white-space:nowrap">
           <?= date('M j, Y', strtotime($rec['record_date'])) ?>
           <?php if ($rec['next_due_date']): ?>
           <br>Next: <?= date('M j, Y', strtotime($rec['next_due_date'])) ?>
@@ -451,17 +517,35 @@ $backLink = $isDashboard
 <?php endif; ?>
 
 <script>
-document.querySelectorAll('.pd-thumbs img, .thumb-img').forEach(function(img){
-  img.addEventListener('click', function(){
-    document.getElementById('mainImg').src = img.src;
-    document.querySelectorAll('.pd-thumbs img, .thumb-img').forEach(function(t){
-      t.style.borderColor = 'transparent';
-      t.classList.remove('active');
+(function () {
+  // Scope thumbnail switching to each independent image gallery on the page.
+  // We look for a mainImg within each gallery wrapper to avoid ID conflicts
+  // if multiple galleries ever coexist. Falls back to #mainImg if no wrapper found.
+  var mainImg = document.getElementById('mainImg');
+  if (!mainImg) return;
+
+  var thumbSelector = '.pd-thumbs img, .thumb-img';
+
+  document.querySelectorAll(thumbSelector).forEach(function (thumb) {
+    thumb.addEventListener('click', function () {
+      // Update main image
+      mainImg.src = thumb.src;
+      mainImg.alt = thumb.alt;
+
+      // Reset all active states — handle both CSS class and inline border
+      document.querySelectorAll(thumbSelector).forEach(function (t) {
+        t.classList.remove('active');
+        // Clear any inline border that may have been set previously
+        t.style.borderColor = 'transparent';
+      });
+
+      // Activate selected — CSS class handles dashboard (pd-thumbs),
+      // inline border handles public layout (.thumb-img with inline styles)
+      thumb.classList.add('active');
+      thumb.style.borderColor = '';  // let CSS class take over where applicable
     });
-    img.style.borderColor = 'var(--green, var(--primary))';
-    img.classList.add('active');
   });
-});
+})();
 </script>
 
 <?php

@@ -55,13 +55,13 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="section-warm">
-  <div class="container" style="padding:3.5rem 0">
+  <div class="container" style="padding-top:1.75rem;padding-bottom:1.75rem">
     <h1>Meet our adoptables</h1>
     <p class="muted" style="max-width:32rem">Filter by type, search by name or breed, and find the friend you have been waiting for.</p>
   </div>
 </section>
 
-<section class="container" style="padding:2rem 0 4rem">
+<section class="container" style="padding-top:2rem;padding-bottom:4rem">
   <form method="get" action="">
     <div class="filters">
       <div class="search-wrap field" style="margin:0">

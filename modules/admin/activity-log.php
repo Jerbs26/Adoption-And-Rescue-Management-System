@@ -38,6 +38,89 @@ include __DIR__ . '/../../includes/sidebar.php';
 .card table tbody tr:hover {
   background: var(--muted, #f5f5f5);
 }
+/* Responsive */
+@media (max-width: 768px) { .main-body { padding: 1.25rem 1.1rem 2rem; } }
+@media (max-width: 480px)  { .main-body { padding: 1rem .85rem 2rem; } }
+
+/* ── Mobile card layout ── */
+@media (max-width: 640px) {
+
+  .card {
+    overflow  : visible !important;
+    border    : none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  .card table thead { display: none !important; }
+
+  .card table,
+  .card table tbody,
+  .card table tr,
+  .card table td {
+    display     : block !important;
+    width       : 100% !important;
+  }
+
+  .card table tbody tr {
+    background   : #fff !important;
+    border       : 1px solid var(--border, #e5e7eb) !important;
+    border-radius: 10px !important;
+    margin-bottom: 10px !important;
+    padding      : 12px 14px 6px !important;
+    box-shadow   : 0 1px 4px rgba(0,0,0,.06) !important;
+  }
+
+  .card table tbody tr:hover {
+    background: var(--muted, #f9f9f9) !important;
+  }
+
+  .card table td {
+    padding      : 7px 0 !important;
+    font-size    : .9rem !important;
+    border-bottom: 1px solid var(--border, #f0f0f0) !important;
+    display      : flex !important;
+    align-items  : center !important;
+    gap          : 10px !important;
+    white-space  : normal !important;
+  }
+
+  .card table td:last-child {
+    border-bottom: none !important;
+  }
+
+  /* Label from data-label */
+  .card table td::before {
+    content      : attr(data-label);
+    font-size    : .68rem !important;
+    font-weight  : 700 !important;
+    letter-spacing: .07em !important;
+    text-transform: uppercase !important;
+    color        : #9ca3af !important;
+    min-width    : 60px !important;
+    max-width    : 60px !important;
+    flex-shrink  : 0 !important;
+  }
+
+  /* User cell — no label, stacked */
+  .card table td:first-child {
+    flex-direction: column !important;
+    align-items   : flex-start !important;
+    gap           : 0 !important;
+    padding-bottom: 10px !important;
+    font-weight   : 700 !important;
+    font-size     : 1rem !important;
+  }
+
+  .card table td:first-child::before {
+    display: none !important;
+  }
+
+  /* Detail cell wraps text */
+  .card table td[data-label="Detail"] {
+    align-items: flex-start !important;
+  }
+}
 </style>
 
 <div class="main-content">
@@ -61,10 +144,10 @@ include __DIR__ . '/../../includes/sidebar.php';
     <?php foreach ($logs as $log): ?>
     <tr style="border-bottom:1px solid var(--border)">
       <td style="padding:.75rem 1rem"><?= e($log['full_name'] ?? 'System') ?></td>
-      <td style="padding:.75rem 1rem"><span class="badge badge-info"><?= e($log['action']) ?></span></td>
-      <td style="padding:.75rem 1rem"><?= e($log['detail'] ?? '—') ?></td>
-      <td style="padding:.75rem 1rem"><?= e($log['ip_address'] ?? '—') ?></td>
-      <td style="padding:.75rem 1rem"><?= !empty($log['created_at']) ? date('M j, Y H:i', strtotime($log['created_at'])) : '—' ?></td>
+      <td style="padding:.75rem 1rem" data-label="Action"><span class="badge badge-info"><?= e($log['action']) ?></span></td>
+      <td style="padding:.75rem 1rem" data-label="Detail"><?= e($log['detail'] ?? '—') ?></td>
+      <td style="padding:.75rem 1rem" data-label="IP"><?= e($log['ip_address'] ?? '—') ?></td>
+      <td style="padding:.75rem 1rem" data-label="Date"><?= !empty($log['created_at']) ? date('M j, Y H:i', strtotime($log['created_at'])) : '—' ?></td>
     </tr>
     <?php endforeach; ?>
     <?php if (!$logs): ?>

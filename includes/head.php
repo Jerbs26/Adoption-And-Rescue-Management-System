@@ -6,7 +6,8 @@ $pageDesc  = $pageDesc ?? 'Adopt dogs and cats from Adoptly.';
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#2d5c3e">
   <title><?= e($pageTitle) ?></title>
   <meta name="description" content="<?= e($pageDesc) ?>">
   <link rel="preconnect" href="https://fonts.googleapis.com">

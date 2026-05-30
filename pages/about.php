@@ -15,7 +15,7 @@ include __DIR__ . '/../includes/header.php';
 ?>
 
 <section class="hero">
-  <div class="container" style="padding:4rem 0;max-width:52rem">
+  <div class="container" style="padding-top:2rem;padding-bottom:2rem;max-width:52rem">
     <h1>About Adoptly Rescue</h1>
     <p class="hero__lead">We are a small, volunteer-run rescue tucked between two rolling hills. Since 2014 we have helped over a thousand animals find loving homes &mdash; one careful match at a time.</p>
     <p class="muted" style="max-width:38rem">Our mission is simple: treat every animal like the individual they are, and trust that the right family is out there for each one. We rehabilitate, foster, train, and educate so every adoption sticks.</p>
@@ -44,26 +44,28 @@ include __DIR__ . '/../includes/header.php';
   </div>
 </section>
 
-<section class="section container">
-  <div class="center" style="max-width:36rem;margin:0 auto 2.5rem">
-    <h2>Happy tails</h2>
-    <p class="muted">Stories from families we have matched.</p>
-  </div>
-  <div class="grid grid-3">
-    <?php foreach ($stories as $s): ?>
-    <article class="card">
-      <div class="pet-card__img">
-        <img src="<?= e($s['imageUrl']) ?>" alt="<?= e($s['petName']) ?> with <?= e($s['adopterName']) ?>" loading="lazy">
-      </div>
-      <div class="pet-card__body">
-        <div class="tag-row" style="color:var(--accent);font-weight:700;font-size:.9rem">
-          <i class="fa-solid fa-heart"></i>
-          <span><?= e($s['petName']) ?> &amp; <?= e($s['adopterName']) ?></span>
+<section class="section">
+  <div class="container">
+    <div class="center" style="max-width:36rem;margin:0 auto 2.5rem">
+      <h2>Happy tails</h2>
+      <p class="muted">Stories from families we have matched.</p>
+    </div>
+    <div class="grid grid-3">
+      <?php foreach ($stories as $s): ?>
+      <article class="card">
+        <div class="pet-card__img">
+          <img src="<?= e($s['imageUrl']) ?>" alt="<?= e($s['petName']) ?> with <?= e($s['adopterName']) ?>" loading="lazy">
         </div>
-        <p class="muted small" style="margin-top:.65rem">"<?= e($s['story']) ?>"</p>
-      </div>
-    </article>
-    <?php endforeach; ?>
+        <div class="pet-card__body">
+          <div class="tag-row" style="color:var(--accent);font-weight:700;font-size:.9rem">
+            <i class="fa-solid fa-heart"></i>
+            <span><?= e($s['petName']) ?> &amp; <?= e($s['adopterName']) ?></span>
+          </div>
+          <p class="muted small" style="margin-top:.65rem">"<?= e($s['story']) ?>"</p>
+        </div>
+      </article>
+      <?php endforeach; ?>
+    </div>
   </div>
 </section>
 

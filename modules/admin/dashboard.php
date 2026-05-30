@@ -121,14 +121,19 @@ include __DIR__ . '/../../includes/sidebar.php';
   .main-content {
     font-family: var(--font-sans);
     min-height : 100vh;
+    height     : 100%;
     color      : var(--text-primary);
     -webkit-font-smoothing: antialiased;
+    display    : flex;
+    flex-direction: column;
   }
 
   /* Page wrapper */
   .main-body {
-    padding: 1.5rem 1.75rem 2rem;
+    padding: 1.25rem 1.75rem 2rem;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   /* Page header */
@@ -170,8 +175,8 @@ include __DIR__ . '/../../includes/sidebar.php';
   /* Stats grid */
   .stats-grid {
     display              : grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap                  : 10px;
+    grid-template-columns: repeat(5, 1fr);
+    gap                  : 12px;
     margin-bottom        : 20px;
   }
 
@@ -180,10 +185,10 @@ include __DIR__ . '/../../includes/sidebar.php';
     background   : var(--bg-card);
     border       : 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding      : 16px 18px;
+    padding      : 20px 22px;
     display      : flex;
     flex-direction: column;
-    gap          : 14px;
+    gap          : 16px;
     box-shadow   : var(--shadow-sm);
     transition   : box-shadow var(--transition), transform var(--transition);
     cursor       : default;
@@ -211,14 +216,14 @@ include __DIR__ . '/../../includes/sidebar.php';
 
   /* Icon badge */
   .stat-icon {
-    width          : 38px;
-    height         : 38px;
+    width          : 42px;
+    height         : 42px;
     border-radius  : var(--radius-sm);
     display        : flex;
     align-items    : center;
     justify-content: center;
     flex-shrink    : 0;
-    font-size      : .9rem;
+    font-size      : 1rem;
     border         : 1px solid transparent;
   }
 
@@ -231,7 +236,7 @@ include __DIR__ . '/../../includes/sidebar.php';
   .stat-body { display: flex; flex-direction: column; gap: 2px; }
 
   .stat-num {
-    font-size    : 1.85rem;
+    font-size    : 2.1rem;
     font-weight  : 700;
     letter-spacing: -.5px;
     line-height  : 1;
@@ -239,7 +244,7 @@ include __DIR__ . '/../../includes/sidebar.php';
   }
 
   .stat-label {
-    font-size : .78rem;
+    font-size : .82rem;
     font-weight: 500;
     color     : var(--text-secondary);
     margin-top: 4px;
@@ -278,10 +283,28 @@ include __DIR__ . '/../../includes/sidebar.php';
     gap                  : 12px;
   }
 
+  @media (max-width: 1100px) {
+    .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  }
   @media (max-width: 900px) {
     .lower-grid { grid-template-columns: 1fr; }
     .main-body  { padding: 20px 18px 40px; }
     .stats-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .main-body  { padding: 16px 14px 32px; }
+  }
+  @media (max-width: 540px) {
+    .main-body  { padding: 12px 10px 28px; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card  { padding: 14px 16px; }
+    .stat-num   { font-size: 1.6rem; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .accounts-section { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  }
+  @media (max-width: 360px) {
+    .stats-grid { grid-template-columns: 1fr; }
   }
 
   /* Panel card */
@@ -317,49 +340,57 @@ include __DIR__ . '/../../includes/sidebar.php';
 
   .panel-action:hover { opacity: .75; }
 
-  /* Applications table */
+  /* Applications table — !important to beat styles.css overrides */
   .apps-table {
-    width          : 100%;
-    border-collapse: collapse;
+    width           : 100% !important;
+    border-collapse : collapse !important;
+    table-layout    : fixed !important;
   }
 
   .apps-table thead th {
-    font-size    : .68rem;
-    font-weight  : 600;
-    letter-spacing: .06em;
-    text-transform: uppercase;
-    color        : var(--text-tertiary);
-    padding      : 8px 16px;
-    text-align   : left;
-    background   : var(--bg-card-alt);
-    border-bottom: 1px solid var(--border-light);
+    font-size     : .75rem !important;
+    font-weight   : 600 !important;
+    letter-spacing: .04em !important;
+    text-transform: uppercase !important;
+    color         : var(--text-secondary) !important;
+    padding       : 8px 12px !important;
+    text-align    : left !important;
+    background    : var(--bg-card-alt) !important;
+    border-bottom : 1px solid var(--border-light) !important;
+    overflow      : hidden !important;
+    text-overflow : ellipsis !important;
+    white-space   : nowrap !important;
   }
 
   .apps-table tbody tr {
-    border-bottom: 1px solid var(--border-light);
-    transition   : background var(--transition);
+    border-bottom: 1px solid var(--border-light) !important;
   }
 
-  .apps-table tbody tr:last-child { border-bottom: none; }
-  .apps-table tbody tr:hover      { background: var(--bg-card-alt); }
+  .apps-table tbody tr:last-child { border-bottom: none !important; }
+  .apps-table tbody tr:hover      { background: var(--bg-card-alt) !important; }
 
   .apps-table td {
-    padding  : 10px 16px;
-    font-size: .82rem;
-    color    : var(--text-primary);
-    vertical-align: middle;
+    padding       : 8px 12px !important;
+    font-size     : .88rem !important;
+    color         : var(--text-primary) !important;
+    vertical-align: middle !important;
+    overflow      : hidden !important;
+    text-overflow : ellipsis !important;
   }
 
   .apps-table .td-meta {
-    color    : var(--text-secondary);
-    font-size: .75rem;
-    margin-top: 2px;
+    color      : var(--text-secondary) !important;
+    font-size  : .78rem !important;
+    margin-top : 1px !important;
+    line-height: 1.3 !important;
   }
 
   .apps-table .app-id {
-    font-family: var(--font-mono);
-    font-size  : .72rem;
-    color      : var(--text-tertiary);
+    font-family: var(--font-mono) !important;
+    font-size  : .7rem !important;
+    color      : var(--text-tertiary) !important;
+    margin-top : 0 !important;
+    line-height: 1.3 !important;
   }
 
   /* Status badge */
@@ -551,6 +582,19 @@ include __DIR__ . '/../../includes/sidebar.php';
   /* ── Accounts Management ── */
   .accounts-section {
     margin-top: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .accounts-section .tab-content.active {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
+  .accounts-section .apps-table {
+    flex: 1;
   }
 
   /* Tab bar */
@@ -566,9 +610,9 @@ include __DIR__ . '/../../includes/sidebar.php';
   .tab-btn {
     display       : inline-flex;
     align-items   : center;
-    gap           : 6px;
-    padding       : 10px 16px;
-    font-size     : .80rem;
+    gap           : 8px;
+    padding       : 12px 20px;
+    font-size     : .875rem;
     font-weight   : 600;
     color         : var(--text-secondary);
     background    : transparent;
@@ -588,13 +632,13 @@ include __DIR__ . '/../../includes/sidebar.php';
   }
 
   .tab-badge {
-    font-size    : .68rem;
+    font-size    : .72rem;
     font-weight  : 700;
-    padding      : 1px 7px;
+    padding      : 2px 8px;
     border-radius: 99px;
     background   : var(--border-light);
     color        : var(--text-secondary);
-    min-width    : 20px;
+    min-width    : 22px;
     text-align   : center;
   }
 
@@ -612,12 +656,12 @@ include __DIR__ . '/../../includes/sidebar.php';
     display      : inline-flex;
     align-items  : center;
     gap          : 4px;
-    font-size    : .70rem;
+    font-size    : .78rem;
     font-weight  : 600;
-    padding      : 2px 8px;
+    padding      : 4px 12px;
     border-radius: 99px;
     white-space  : nowrap;
-    letter-spacing: .02em;
+    letter-spacing: .01em;
   }
 
   .role-pill.adopter {
@@ -636,10 +680,10 @@ include __DIR__ . '/../../includes/sidebar.php';
   .verified-badge {
     display      : inline-flex;
     align-items  : center;
-    gap          : 4px;
-    font-size    : .70rem;
+    gap          : 5px;
+    font-size    : .78rem;
     font-weight  : 600;
-    padding      : 2px 8px;
+    padding      : 4px 12px;
     border-radius: 99px;
   }
 
@@ -672,6 +716,127 @@ include __DIR__ . '/../../includes/sidebar.php';
     margin-right: 3px;
     opacity    : .6;
   }
+
+  @media (max-width: 640px) {
+    .accounts-section.panel {
+      overflow : visible !important;
+      border   : none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+      padding  : 0 !important;
+    }
+
+    .accounts-section .tab-content.active {
+      padding: 6px 0 0 !important;
+    }
+  }
+
+  /* ── Mobile: accounts table becomes cards ── */
+  @media (max-width: 640px) {
+    .tab-bar {
+      overflow-x   : auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      padding      : 0 8px;
+    }
+    .tab-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      padding  : 8px 12px;
+      font-size: .78rem;
+      flex-shrink: 0;
+    }
+
+    /* Hide the real <thead> */
+    .apps-table thead { display: none !important; }
+
+    /* Reset table to block layout */
+    .apps-table,
+    .apps-table tbody,
+    .apps-table tr,
+    .apps-table td {
+      display     : block !important;
+      width       : 100% !important;
+      table-layout: auto !important;
+    }
+
+    /* Each row becomes a compact card */
+    .apps-table tbody tr {
+      background   : var(--bg-card) !important;
+      border       : 1px solid var(--border-light) !important;
+      border-radius: var(--radius-md) !important;
+      margin       : 6px 0 !important;
+      padding      : 12px 14px 6px !important;
+      box-shadow   : var(--shadow-sm) !important;
+      width        : 100% !important;
+    }
+
+    .apps-table tbody tr:hover {
+      background: var(--bg-card-alt) !important;
+    }
+
+    /* Each cell: label + value side by side */
+    .apps-table td {
+      padding        : 7px 0 !important;
+      font-size      : .9rem !important;
+      overflow       : visible !important;
+      text-overflow  : unset !important;
+      white-space    : normal !important;
+      display        : flex !important;
+      align-items    : center !important;
+      gap            : 10px !important;
+      border-bottom  : 1px solid var(--border-light) !important;
+    }
+
+    .apps-table td:last-child {
+      border-bottom: none !important;
+    }
+
+    /* data-label pseudo-label */
+    .apps-table td::before {
+      content      : attr(data-label);
+      font-size    : .7rem !important;
+      font-weight  : 700 !important;
+      letter-spacing: .06em !important;
+      text-transform: uppercase !important;
+      color        : var(--text-tertiary) !important;
+      min-width    : 68px !important;
+      max-width    : 68px !important;
+      flex-shrink  : 0 !important;
+    }
+
+    /* Name/email first cell: stacked, no label */
+    .apps-table td:first-child {
+      flex-direction : column !important;
+      align-items    : flex-start !important;
+      gap            : 2px !important;
+      padding-bottom : 10px !important;
+    }
+
+    .apps-table td:first-child::before {
+      display: none !important;
+    }
+
+    .apps-table td:first-child > div:first-child {
+      font-weight: 700 !important;
+      font-size  : 1rem !important;
+    }
+
+    .apps-table .td-meta {
+      font-size: .82rem !important;
+    }
+
+    .apps-table .app-id {
+      font-size: .75rem !important;
+    }
+
+    /* Keep pills readable */
+    .role-pill,
+    .verified-badge {
+      font-size: .78rem !important;
+      padding  : 4px 11px !important;
+    }
+  }
 </style>
 
 <div class="main-content">
@@ -687,7 +852,7 @@ include __DIR__ . '/../../includes/sidebar.php';
 
     <!-- Stat cards — account management focused -->
     <p class="section-label">Account Overview</p>
-    <div class="stats-grid" style="grid-template-columns:repeat(5,1fr)">
+    <div class="stats-grid">
 
       <div class="stat-card">
         <div class="stat-icon violet"><i class="fa-solid fa-users"></i></div>
@@ -733,7 +898,7 @@ include __DIR__ . '/../../includes/sidebar.php';
 
     <!-- Quick actions row for pending items -->
     <?php if ($pendingRescueApprovals > 0 || $pendingIdVerifications > 0): ?>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
+    <div class="quick-actions-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;">
       <?php if ($pendingRescueApprovals > 0): ?>
       <a href="<?= BASE_URL ?>/modules/admin/users.php?tab=rescue_orgs" class="btn-action-full" style="flex:0 1 auto;padding:9px 18px;width:auto;">
         <i class="fa-solid fa-house-chimney-medical"></i>
@@ -823,15 +988,20 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
     <table class="apps-table">
       <thead>
         <tr>
-          <th>Name / Email</th>
-          <th>Role</th>
           <?php if ($hasRescue): ?>
-            <th>Shelter Name</th>
-            <th>SEC Reg No.</th>
-            <th>Address / Phone</th>
+            <th style="width:18% !important">Name / Email</th>
+            <th style="width:10% !important">Role</th>
+            <th style="width:14% !important">Shelter Name</th>
+            <th style="width:13% !important">SEC Reg No.</th>
+            <th style="width:18% !important">Address / Phone</th>
+            <th style="width:11% !important">Verified</th>
+            <th style="width:16% !important">Joined</th>
+          <?php else: ?>
+            <th style="width:30% !important">Name / Email</th>
+            <th style="width:18% !important">Role</th>
+            <th style="width:22% !important">Verified</th>
+            <th style="width:30% !important">Joined</th>
           <?php endif; ?>
-          <th>Verified</th>
-          <th>Joined</th>
         </tr>
       </thead>
       <tbody>
@@ -864,13 +1034,13 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
               <div class="td-meta"><?= htmlspecialchars((string)($u['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?></div>
               <div class="app-id">#<?= (int)$u['id'] ?></div>
             </td>
-            <td>
+            <td data-label="Role">
               <span class="role-pill <?= $rolePill ?>">
                 <?= htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8') ?>
               </span>
             </td>
             <?php if ($hasRescue): ?>
-              <td>
+              <td data-label="Shelter">
                 <?php
                   $_sname = (!empty($u['shelter_name']) ? $u['shelter_name'] : null)
                          ?? (!empty($u['organization_name']) ? $u['organization_name'] : null);
@@ -880,7 +1050,7 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
                   <span style="color:var(--text-tertiary);">—</span>
                 <?php endif; ?>
               </td>
-              <td>
+              <td data-label="SEC Reg">
                 <?php if ($isRescue && !empty($u['sec_registration_no'])): ?>
                   <span style="font-family:var(--font-mono);font-size:.75rem;">
                     <?= htmlspecialchars((string)$u['sec_registration_no'], ENT_QUOTES, 'UTF-8') ?>
@@ -889,7 +1059,7 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
                   <span style="color:var(--text-tertiary);">—</span>
                 <?php endif; ?>
               </td>
-              <td>
+              <td data-label="Address">
                 <?php if ($isRescue): ?>
                   <?php
                   $_addr = (!empty($u['address']) ? $u['address'] : null)
@@ -914,7 +1084,7 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
                 <?php endif; ?>
               </td>
             <?php endif; ?>
-            <td>
+            <td data-label="Status">
               <span class="verified-badge <?= $verified ?>">
                 <?php if ($verified === 'yes'): ?>
                   <i class="fa-solid fa-circle-check"></i>
@@ -924,7 +1094,7 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
                 <?= $verLabel ?>
               </span>
             </td>
-            <td><?= $joinedStr ?></td>
+            <td data-label="Joined" style="white-space:nowrap"><?= $joinedStr ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -934,10 +1104,7 @@ function renderAccountsTable(array $rows, bool $showRescueCols = false): void
 ?>
 
 <script>
-/**
- * Switch the active tab in the Accounts Management panel.
- * @param {string} tabKey  'all' | 'adopters' | 'rescue'
- */
+
 function switchTab(tabKey) {
   var tabIds  = ['all', 'adopters', 'rescue'];
   var btnIds  = ['btn-all', 'btn-adopters', 'btn-rescue'];

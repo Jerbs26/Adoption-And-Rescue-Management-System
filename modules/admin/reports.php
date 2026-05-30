@@ -7,7 +7,7 @@ require_role('admin');
 
 $user       = current_user();
 $activePage = 'reports';
-$pageTitle  = 'Reports &amp; Analytics';
+$pageTitle  = 'Reports & Analytics';
 
 // Safe HTML escape fallback in case e() isn't globally defined
 if (!function_exists('e')) {
@@ -437,18 +437,51 @@ include __DIR__ . '/../../includes/sidebar.php';
   .kpi-row   { grid-template-columns: repeat(2, 1fr); }
   .main-grid { grid-template-columns: 1fr 1fr; }
   .span2     { grid-column: span 2; }
+  .rp-body   { padding: 1.25rem 1.5rem 2.5rem; }
+}
+@media(max-width: 768px) {
+  .rp-body   { padding: 1.1rem 1.1rem 2rem; }
+  .kpi-num   { font-size: 1.9rem; }
+  .main-grid { grid-template-columns: 1fr; }
+  .span2     { grid-column: span 1; }
+  .rp-header { flex-direction: column; align-items: flex-start; gap: .5rem; }
+  .rp-timestamp { align-self: flex-start; }
 }
 @media(max-width: 640px) {
-  .kpi-row   { grid-template-columns: repeat(2, 1fr); }
+  .kpi-row   { grid-template-columns: repeat(2, 1fr); gap: .65rem; }
   .main-grid { grid-template-columns: 1fr; }
   .span2     { grid-column: span 1; }
   .rates-row { grid-template-columns: 1fr; }
+  .rates-row .rate-wrap:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+  /* Adoptions table: card rows */
+  .adoptions-table thead { display: none; }
+  .adoptions-table tbody tr {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .3rem .5rem;
+    padding: .85rem 1rem;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .adoptions-table tbody tr td { padding: 0; font-size: .82rem; border: none; vertical-align: middle; }
+  .adoptions-table tbody tr td:first-child { display: none; }
+}
+@media(max-width: 480px) {
+  .kpi-row   { gap: .5rem; }
+  .kpi-card  { padding: .85rem 1rem; }
+  .kpi-num   { font-size: 1.6rem; }
+  .rp-body   { padding: .85rem .85rem 2rem; gap: 1rem; }
+  .bar-chart { height: 80px; }
+  .bar-labels span { font-size: .52rem; }
+}
+@media(max-width: 360px) {
+  .kpi-row { grid-template-columns: 1fr; }
 }
 </style>
 
 <div class="main-content rp-wrap">
 <?php include __DIR__ . '/../../includes/topbar.php'; ?>
-<div class="rp-body">
+<div class="rp-body main-body">
 
   <!-- Page Header -->
   <div class="rp-header">

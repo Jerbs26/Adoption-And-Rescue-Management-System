@@ -5,21 +5,63 @@
   function $id(id)  { return document.getElementById(id); }
   function $qs(sel) { return document.querySelector(sel); }
 
-  /* ── Public-site hamburger (mobile nav) ──────────────────── */
+  /* ── Public-site hamburger (mobile nav sidebar drawer) ───── */
   var hamburger = $id('navHamburger');
   var mobileNav = $id('mobileNav');
+
   if (hamburger && mobileNav) {
+
+    /* Move drawer to <body> so it's not clipped by header stacking context */
+    if (mobileNav.parentElement !== document.body) {
+      document.body.appendChild(mobileNav);
+    }
+
+    /* Inject overlay if not present */
+    var mobileNavOverlay = $id('mobileNavOverlay');
+    if (!mobileNavOverlay) {
+      mobileNavOverlay = document.createElement('div');
+      mobileNavOverlay.id        = 'mobileNavOverlay';
+      mobileNavOverlay.className = 'mobile-nav-overlay';
+      document.body.appendChild(mobileNavOverlay);
+    }
+
+    /* Inject close button inside drawer if not present */
+    if (!mobileNav.querySelector('.mobile-nav__close-btn')) {
+      var closeBtn = document.createElement('button');
+      closeBtn.className = 'mobile-nav__close-btn';
+      closeBtn.setAttribute('aria-label', 'Close menu');
+      closeBtn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+      mobileNav.insertBefore(closeBtn, mobileNav.firstChild);
+    }
+
+    function openMobileNav() {
+      mobileNav.classList.add('open');
+      mobileNavOverlay.classList.add('open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      mobileNav.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMobileNav() {
+      mobileNav.classList.remove('open');
+      mobileNavOverlay.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      mobileNav.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
     hamburger.addEventListener('click', function () {
-      var open = mobileNav.classList.toggle('open');
-      hamburger.setAttribute('aria-expanded', String(open));
-      mobileNav.setAttribute('aria-hidden',  String(!open));
+      mobileNav.classList.contains('open') ? closeMobileNav() : openMobileNav();
     });
+
+    mobileNav.addEventListener('click', function (e) {
+      if (e.target.closest('.mobile-nav__close-btn')) closeMobileNav();
+    });
+
+    mobileNavOverlay.addEventListener('click', closeMobileNav);
+
     mobileNav.querySelectorAll('a').forEach(function (link) {
-      link.addEventListener('click', function () {
-        mobileNav.classList.remove('open');
-        hamburger.setAttribute('aria-expanded', 'false');
-        mobileNav.setAttribute('aria-hidden', 'true');
-      });
+      link.addEventListener('click', closeMobileNav);
     });
   }
 
@@ -41,44 +83,13 @@
     userDrop.addEventListener('click', function (e) { e.stopPropagation(); });
   }
 
-  /* ── Dashboard sidebar ───────────────────────────────────── */
-  var sidebar        = $id('appSidebar');
-  var sidebarOverlay = $id('sidebarOverlay');
-  var sidebarToggle  = $id('sidebarToggle');
-
-  function openSidebar() {
-    if (!sidebar) return;
-    sidebar.classList.add('open');
-    if (sidebarOverlay) sidebarOverlay.classList.add('open');
-    if (sidebarToggle)  sidebarToggle.setAttribute('aria-expanded', 'true');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeSidebar() {
-    if (!sidebar) return;
-    sidebar.classList.remove('open');
-    if (sidebarOverlay) sidebarOverlay.classList.remove('open');
-    if (sidebarToggle)  sidebarToggle.setAttribute('aria-expanded', 'false');
-    document.body.style.overflow = '';
-  }
-
-  if (sidebarToggle && sidebar) {
-    sidebarToggle.addEventListener('click', function () {
-      sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
-    });
-  }
-  if (sidebarOverlay) {
-    sidebarOverlay.addEventListener('click', closeSidebar);
-  }
-  window.addEventListener('resize', function () {
-    if (window.innerWidth > 900) closeSidebar();
-  });
-
   /* ── Escape key closes everything ───────────────────────── */
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     var openModal = $qs('.modal.open');
     if (openModal) { openModal.classList.remove('open'); document.body.style.overflow = ''; return; }
-    if (sidebar && sidebar.classList.contains('open')) { closeSidebar(); return; }
+    var sb = $id('appSidebar');
+    if (sb && sb.classList.contains('open')) { doCloseSidebar(); return; }
     if (userDrop && userDrop.classList.contains('open')) {
       userDrop.classList.remove('open');
       if (userBtn) userBtn.setAttribute('aria-expanded', 'false');
@@ -86,6 +97,9 @@
     }
     if (mobileNav && mobileNav.classList.contains('open')) {
       mobileNav.classList.remove('open');
+      var _ov = $id('mobileNavOverlay');
+      if (_ov) _ov.classList.remove('open');
+      document.body.style.overflow = '';
       if (hamburger) {
         hamburger.setAttribute('aria-expanded', 'false');
         mobileNav.setAttribute('aria-hidden', 'true');
@@ -163,118 +177,103 @@
   document.addEventListener('keydown',   function (e) { if (e.key === 'Tab') document.body.classList.add('kb-nav'); });
   document.addEventListener('mousedown', function ()  { document.body.classList.remove('kb-nav'); });
 
-  /* ── Table scroll hints on mobile ───────────────────────── */
-  if (window.innerWidth <= 640) {
-    document.querySelectorAll('.card table').forEach(function (table) {
-      var card = table.closest('.card');
-      if (!card) return;
-      var hint = document.createElement('div');
-      hint.className = 'table-scroll-hint';
-      hint.innerHTML = '<i class="fa-solid fa-arrows-left-right" style="margin-right:.3rem"></i>Scroll to see more';
-      card.parentNode.insertBefore(hint, card.nextSibling);
-      card.addEventListener('scroll', function () { hint.style.display = 'none'; }, { once: true });
-    });
+
+
+  /* ══════════════════════════════════════════════════════════
+   * Dashboard sidebar — single unified init
+   * All sidebar open/close logic lives here, nowhere else.
+   * ══════════════════════════════════════════════════════════ */
+
+  /* Module-level open/close so Escape handler above can call them */
+  function doOpenSidebar(sb, ov, toggleBtn) {
+    sb.classList.add('open');
+    if (ov) { ov.classList.add('open'); ov.removeAttribute('aria-hidden'); }
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+    var closeBtn = $id('sidebarClose');
+    if (closeBtn) closeBtn.focus();
+  }
+  function doCloseSidebar(toggleBtn) {
+    var sb = $id('appSidebar');
+    var ov = $id('sidebarOverlay');
+    if (!sb) return;
+    sb.classList.remove('open');
+    if (ov) { ov.classList.remove('open'); ov.setAttribute('aria-hidden', 'true'); }
+    if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
   }
 
-  /* ── Guaranteed sidebar hamburger for admin pages ────────── *
-   *
-   * Problem: the admin topbar.php may not render #sidebarToggle,
-   * so we inject one into the topbar if it's missing.
-   *
-   * Strategy:
-   *   1. Wait for DOM ready (we're in <body> so it's already ready,
-   *      but use DOMContentLoaded for safety if deferred).
-   *   2. Find the topbar element — try multiple selectors.
-   *   3. If no #sidebarToggle exists in the DOM, create one and
-   *      prepend it to the topbar.
-   *   4. Also ensure the overlay exists.
-   * ──────────────────────────────────────────────────────────── */
-  function initHamburger() {
+  function initSidebar() {
     var sb = $id('appSidebar');
     if (!sb) return; // not a dashboard page
 
-    // ── Ensure overlay exists ──────────────────────────────────
+    /* ── Ensure overlay exists ──────────────────────────────── */
     var ov = $id('sidebarOverlay');
     if (!ov) {
       ov = document.createElement('div');
       ov.id        = 'sidebarOverlay';
       ov.className = 'sidebar-overlay';
+      ov.setAttribute('aria-hidden', 'true');
       document.body.appendChild(ov);
     }
 
-    // ── Open / close helpers ───────────────────────────────────
-    function doOpen() {
-      sb.classList.add('open');
-      ov.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    }
-    function doClose() {
-      sb.classList.remove('open');
-      ov.classList.remove('open');
-      document.body.style.overflow = '';
-    }
-    ov.addEventListener('click', doClose);
-
-    // ── Wire existing #sidebarToggle if present ────────────────
-    var existing = $id('sidebarToggle');
-    if (existing) {
-      var clone = existing.cloneNode(true);
-      existing.parentNode.replaceChild(clone, existing);
-      clone.addEventListener('click', function () {
-        sb.classList.contains('open') ? doClose() : doOpen();
-      });
-      return;
+    /* ── Wire sidebar close button ─────────────────────────── */
+    var closeBtn = $id('sidebarClose');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () { doCloseSidebar(); });
     }
 
-    // ── Build the hamburger button ─────────────────────────────
-    var btn = document.createElement('button');
-    btn.type      = 'button';
-    btn.id        = 'sidebarToggle';
-    btn.className = 'sidebar-toggle';
-    btn.setAttribute('aria-label',    'Open navigation');
-    btn.setAttribute('aria-expanded', 'false');
-    btn.setAttribute('aria-controls', 'appSidebar');
-    btn.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
+    /* ── Wire overlay ──────────────────────────────────────── */
+    ov.addEventListener('click', function () { doCloseSidebar(); });
 
-    btn.addEventListener('click', function () {
-      if (sb.classList.contains('open')) {
-        doClose();
-        btn.setAttribute('aria-expanded', 'false');
-        btn.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
-      } else {
-        doOpen();
-        btn.setAttribute('aria-expanded', 'true');
-        btn.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
-      }
+    /* ── Close on resize to desktop ────────────────────────── */
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900) doCloseSidebar();
     });
 
-    // ── Find a REAL topbar (has content beyond the toggle) ─────
-    // A real topbar will have class containing "topbar" but NOT be .main-body.
-    var realTopbar = $qs('.main-topbar')
-                  || $qs('.dash-topbar')
-                  || $qs('[class*="topbar"]:not(.main-body)');
+    /* ── Find or create the toggle button ──────────────────── */
+    var toggleBtn = $id('sidebarToggle');
 
-    if (realTopbar) {
-      // Prepend into existing topbar
-      realTopbar.insertBefore(btn, realTopbar.firstChild);
-      return;
+    if (!toggleBtn) {
+      /* Build the hamburger button */
+      toggleBtn = document.createElement('button');
+      toggleBtn.type      = 'button';
+      toggleBtn.id        = 'sidebarToggle';
+      toggleBtn.className = 'sidebar-toggle';
+      toggleBtn.setAttribute('aria-label',    'Open navigation');
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.setAttribute('aria-controls', 'appSidebar');
+      toggleBtn.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
+
+      /* Find a real topbar to inject into */
+      var realTopbar = $qs('.main-topbar')
+                    || $qs('.dash-topbar')
+                    || $qs('[class*="topbar"]:not(.main-body)');
+
+      if (realTopbar) {
+        realTopbar.insertBefore(toggleBtn, realTopbar.firstChild);
+      } else {
+        /* No topbar at all — create one before .main-body */
+        var mainContent = $qs('.main-content');
+        var mainBody    = $qs('.main-body');
+        if (!mainContent || !mainBody) return;
+        var bar = document.createElement('div');
+        bar.className = 'main-topbar injected-topbar';
+        bar.appendChild(toggleBtn);
+        mainContent.insertBefore(bar, mainBody);
+      }
     }
 
-    // ── No real topbar found: create one and insert before .main-body ──
-    var mainContent = $qs('.main-content');
-    var mainBody    = $qs('.main-body');
-
-    if (!mainContent || !mainBody) return;
-
-    var bar = document.createElement('div');
-    bar.className = 'main-topbar injected-topbar';
-    bar.appendChild(btn);
-
-    // Insert the new topbar bar before .main-body
-    mainContent.insertBefore(bar, mainBody);
+    /* ── Wire the toggle (whether found or created) ────────── */
+    toggleBtn.addEventListener('click', function () {
+      if (sb.classList.contains('open')) {
+        doCloseSidebar(toggleBtn);
+      } else {
+        doOpenSidebar(sb, ov, toggleBtn);
+      }
+    });
   }
 
-  // Run immediately (script loads at end of body)
-  initHamburger();
+  initSidebar();
 
 })();

@@ -149,9 +149,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if ($action === 'delete' && $targetId && $targetId !== (int)$user['id']) {
+        // Determine which tab to redirect back to
+        $deleteStmt = db()->prepare("SELECT role FROM users WHERE id = ?");
+        $deleteStmt->execute([$targetId]);
+        $deletedUser = $deleteStmt->fetch();
+        $redirectTab = 'users';
+        if ($deletedUser) {
+            if ($deletedUser['role'] === 'adopter') $redirectTab = 'adopters';
+            elseif (in_array($deletedUser['role'], ['rescue_org','staff'], true)) $redirectTab = 'rescue_orgs';
+        }
         db()->prepare("DELETE FROM users WHERE id = ?")->execute([$targetId]);
         flash('success', 'User deleted.');
-        redirect(BASE_URL . '/modules/admin/users.php?tab=users');
+        redirect(BASE_URL . '/modules/admin/users.php?tab=' . $redirectTab);
     }
 
     // Verify ID 
@@ -337,8 +346,10 @@ include __DIR__ . '/../../includes/sidebar.php';
 /* Tabs  */
 .admin-tabs {
   display: flex; gap: .25rem; border-bottom: 2px solid var(--border);
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem; overflow-x: auto; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
+.admin-tabs::-webkit-scrollbar { display: none; }
 .admin-tab {
   padding: .6rem 1.2rem; font-size: .87rem; font-weight: 700;
   cursor: pointer; text-decoration: none;
@@ -346,6 +357,7 @@ include __DIR__ . '/../../includes/sidebar.php';
   margin-bottom: -2px; border-radius: 6px 6px 0 0;
   transition: color .15s, border-color .15s;
   display: inline-flex; align-items: center; gap: .4rem;
+  white-space: nowrap; flex-shrink: 0;
 }
 .admin-tab:hover  { color: var(--primary); }
 .admin-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
@@ -355,14 +367,19 @@ include __DIR__ . '/../../includes/sidebar.php';
   padding: .05rem .45rem; min-width: 18px; text-align: center;
 }
 
+/* Action cell */
+.action-cell {
+  display: flex; gap: .5rem; align-items: center; flex-wrap: wrap;
+}
+
 /* ID review card */
 .id-review-grid {
-  display: grid; gap: 1rem;
+  display: flex; flex-direction: column; gap: 1rem;
 }
 .id-review-card {
   border: 1.5px solid var(--border); border-radius: 14px;
-  padding: 1.1rem 1.25rem; background: var(--card);
-  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  padding: .85rem 1.1rem; background: var(--card);
+  display: flex; align-items: center; gap: .9rem; flex-wrap: wrap;
 }
 .id-review-card.is-pending  { border-left: 4px solid hsl(38 85% 55%); }
 .id-review-card.is-verified { border-left: 4px solid var(--success); }
@@ -393,23 +410,113 @@ include __DIR__ . '/../../includes/sidebar.php';
 .modal-overlay {
   display: none; position: fixed; inset: 0;
   background: rgba(0,0,0,.45); z-index: 9999;
-  align-items: center; justify-content: center;
+  align-items: center; justify-content: center; padding: 1rem;
 }
 .modal-overlay.open { display: flex; }
 .modal-box {
   background: #fff; border-radius: 16px;
   padding: 2rem; width: 100%; max-width: 440px;
   box-shadow: 0 24px 64px rgba(0,0,0,.18);
+  max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
 }
 .modal-box h3 { margin: 0 0 1rem; font-size: 1.1rem; }
 .modal-box textarea {
   width: 100%; resize: vertical; min-height: 90px;
   border: 1.5px solid var(--border); border-radius: 10px;
-  padding: .7rem; font: inherit; font-size: .9rem;
-  margin-bottom: 1rem; outline: none;
+  padding: .7rem; font: inherit; font-size: 16px; /* prevent iOS zoom */
+  margin-bottom: 1rem; outline: none; box-sizing: border-box;
 }
 .modal-box textarea:focus { border-color: var(--primary); }
 .modal-actions { display: flex; gap: .6rem; justify-content: flex-end; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .main-body { padding: 1.25rem 1.1rem 2.5rem; }
+  .stat-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+@media (max-width: 640px) {
+  .main-body { padding: 1rem .85rem 2rem; }
+
+  /* ── Table → card transform (mirrors dashboard.php) ── */
+  .users-table-wrap table thead { display: none !important; }
+
+  .users-table-wrap table,
+  .users-table-wrap tbody,
+  .users-table-wrap tr,
+  .users-table-wrap td {
+    display: block !important;
+    width: 100% !important;
+    table-layout: auto !important;
+  }
+
+  /* Each row = a card */
+  .users-table-wrap tbody tr {
+    background: var(--card) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+    margin: 0 0 .75rem !important;
+    padding: 12px 14px 6px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+  }
+
+  /* Each cell: label (::before) + value side-by-side */
+  .users-table-wrap td {
+    padding: 7px 0 !important;
+    font-size: .88rem !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    white-space: normal !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border-bottom: 1px solid var(--border) !important;
+  }
+
+  .users-table-wrap td:last-child { border-bottom: none !important; }
+
+  /* data-label pseudo */
+  .users-table-wrap td::before {
+    content: attr(data-label);
+    font-size: .7rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
+    color: var(--muted-fg) !important;
+    min-width: 72px !important;
+    max-width: 72px !important;
+    flex-shrink: 0 !important;
+  }
+
+  /* First cell (name/email): stacked, no label */
+  .users-table-wrap td:first-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    padding-bottom: 10px !important;
+  }
+  .users-table-wrap td:first-child::before { display: none !important; }
+  .users-table-wrap td:first-child .td-name { font-weight: 700 !important; font-size: 1rem !important; }
+  .users-table-wrap td:first-child .td-meta { font-size: .8rem !important; color: var(--muted-fg) !important; }
+
+  /* Last cell (actions): full-width buttons */
+  .users-table-wrap td:last-child::before { display: none !important; }
+  .users-table-wrap .action-cell { flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; }
+  .users-table-wrap .action-cell form { flex: 1 !important; }
+  .users-table-wrap .action-cell .btn { width: 100% !important; justify-content: center !important; }
+
+  /* Rescue org / id-review cards */
+  .id-review-card { flex-direction: column; }
+  .id-rv__actions { width: 100%; }
+  .id-rv__actions form { flex: 1 1 auto; min-width: 0; }
+  .id-rv__actions .btn { width: 100%; justify-content: center; }
+  .id-status-pill { align-self: flex-start; }
+
+  /* Modal */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal-box { border-radius: 16px 16px 0 0; max-height: 90vh; }
+  .modal-actions { flex-direction: column-reverse; }
+  .modal-actions .btn { width: 100%; justify-content: center; }
+}
 </style>
 
 <div class="main-content">
@@ -451,14 +558,17 @@ include __DIR__ . '/../../includes/sidebar.php';
 
 <?php if ($activeTab === 'users'): ?>
 
-<form method="get" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem">
+<form method="get" style="margin-bottom:1.5rem">
   <input type="hidden" name="tab" value="users">
-  <input name="q" type="text" placeholder="Search name or email…"
-          value="<?= e($search) ?>" style="flex:1;min-width:200px">
-  <button class="btn btn-secondary" type="submit">Search</button>
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+    <input name="q" type="text" placeholder="Search name or email…"
+            value="<?= e($search) ?>" style="flex:1;min-width:0;box-sizing:border-box">
+    <button class="btn btn-secondary" type="submit" style="white-space:nowrap">Search</button>
+  </div>
 </form>
 
-<div class="card">
+<!-- All Users table -->
+<div class="card users-table-wrap">
   <table style="width:100%;border-collapse:collapse">
     <thead>
       <tr style="background:var(--muted);text-align:left">
@@ -468,7 +578,7 @@ include __DIR__ . '/../../includes/sidebar.php';
         <th style="padding:.75rem 1rem">Status</th>
         <th style="padding:.75rem 1rem">ID Status</th>
         <th style="padding:.75rem 1rem">Joined</th>
-        <th style="padding:.75rem 1rem">Actions</th>
+        <th style="padding:.75rem 1rem;text-align:center">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -484,33 +594,33 @@ include __DIR__ . '/../../includes/sidebar.php';
       $_shelterName = (!empty($u['shelter_name'])      ? $u['shelter_name']      : null)
                    ?? (!empty($u['organization_name']) ? $u['organization_name'] : null)
                    ?? null;
-      $displayName  = $isRescue && $_shelterName
-          ? e($u['full_name']) . '<br><small class="muted" style="font-weight:400">' . e($_shelterName) . '</small>'
-          : e($u['full_name']);
+      $roleLabel = match($u['role']) {
+        'admin'      => '<span class="badge" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">Admin</span>',
+        'staff'      => '<span class="badge" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe">Staff</span>',
+        'rescue_org' => '<span class="badge" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe">Rescue Org</span>',
+        'adopter'    => '<span class="badge" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0">Adopter</span>',
+        default      => '<span class="badge badge-muted">' . e($u['role']) . '</span>',
+      };
     ?>
     <tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:.75rem 1rem"><?= $displayName ?></td>
-      <td style="padding:.75rem 1rem"><?= e($u['email']) ?></td>
       <td style="padding:.75rem 1rem">
-        <?php
-          $roleLabel = match($u['role']) {
-            'admin'      => '<span class="badge" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca">Admin</span>',
-            'staff'      => '<span class="badge" style="background:#f5f3ff;color:#6d28d9;border:1px solid #ddd6fe">Staff</span>',
-            'rescue_org' => '<span class="badge" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe">Rescue Org</span>',
-            'adopter'    => '<span class="badge" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0">Adopter</span>',
-            default      => '<span class="badge badge-muted">' . e($u['role']) . '</span>',
-          };
-          echo $roleLabel;
-        ?>
+        <div class="td-name"><?= e($u['full_name']) ?></div>
+        <?php if ($isRescue && $_shelterName): ?>
+          <div class="td-meta"><?= e($_shelterName) ?></div>
+        <?php endif; ?>
       </td>
-      <td style="padding:.75rem 1rem"><?= $u['is_active']
-            ? '<span class="badge badge-success">Active</span>'
-            : '<span class="badge badge-warning">Pending</span>' ?></td>
-      <td style="padding:.75rem 1rem">
+      <td style="padding:.75rem 1rem" data-label="Email"><?= e($u['email']) ?></td>
+      <td style="padding:.75rem 1rem" data-label="Role"><?= $roleLabel ?></td>
+      <td style="padding:.75rem 1rem" data-label="Status">
+        <?= $u['is_active'] ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-warning">Pending</span>' ?>
+      </td>
+      <td style="padding:.75rem 1rem" data-label="ID">
         <?= in_array($u['role'], ['adopter'], true) ? ($idBadges[$idSt] ?? $idBadges['none']) : '<span class="muted small">—</span>' ?>
       </td>
-      <td style="padding:.75rem 1rem"><?= !empty($u['created_at']) ? date('M j, Y', strtotime($u['created_at'])) : '—' ?></td>
-      <td style="padding:.75rem 1rem;display:flex;gap:.5rem;align-items:center">
+      <td style="padding:.75rem 1rem" data-label="Joined">
+        <?= !empty($u['created_at']) ? date('M j, Y', strtotime($u['created_at'])) : '—' ?>
+      </td>
+      <td style="padding:.75rem 1rem" data-label="Actions"><div class="action-cell" style="justify-content:center">
         <?php if ((int)$u['id'] === (int)$user['id']): ?>
         <span class="muted small">You</span>
         <?php elseif ($u['role'] === 'admin'): ?>
@@ -528,11 +638,13 @@ include __DIR__ . '/../../includes/sidebar.php';
           <?= csrf_field() ?>
           <input type="hidden" name="action"  value="delete">
           <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-          <button class="btn btn-sm btn-ghost" type="submit"
-                  data-confirm="Delete this user?"
-                  style="color:var(--danger)">Delete</button>
+          <button class="btn btn-sm btn-danger" type="submit"
+                  data-confirm="Delete this user?">
+            <i class="fa-solid fa-trash"></i> Delete
+          </button>
         </form>
         <?php endif; ?>
+        </div>
       </td>
     </tr>
     <?php endforeach; ?>
@@ -547,54 +659,82 @@ include __DIR__ . '/../../includes/sidebar.php';
 
 <?php if ($activeTab === 'adopters'): ?>
 
-<!-- Summary stats -->
-<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem">
-  <div class="card" style="flex:1;min-width:140px;padding:1rem 1.25rem;text-align:center">
-    <div style="font-size:1.6rem;font-weight:800;color:var(--primary)"><?= $totalAdopters ?></div>
-    <div style="font-size:.78rem;color:var(--muted-fg);margin-top:.2rem">Total Adopters</div>
+<!-- Summary stats — dashboard style -->
+<p class="section-label" style="font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:.75rem">Adopter Overview</p>
+<div class="stat-cards-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem">
+
+  <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="width:38px;height:38px;border-radius:8px;background:#f5f3ff;color:#7c3aed;border:1px solid #ddd6fe;display:flex;align-items:center;justify-content:center;font-size:.95rem">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div>
+      <div style="font-size:1.9rem;font-weight:700;line-height:1;color:var(--text-primary, #111827)"><?= $totalAdopters ?></div>
+      <div style="font-size:.82rem;font-weight:500;color:var(--muted-fg);margin-top:.25rem">Total Adopters</div>
+    </div>
   </div>
-  <div class="card" style="flex:1;min-width:140px;padding:1rem 1.25rem;text-align:center">
-    <div style="font-size:1.6rem;font-weight:800;color:var(--success)"><?= $activeAdopters ?></div>
-    <div style="font-size:.78rem;color:var(--muted-fg);margin-top:.2rem">Active</div>
+
+  <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="width:38px;height:38px;border-radius:8px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:.95rem">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div>
+      <div style="font-size:1.9rem;font-weight:700;line-height:1;color:var(--text-primary, #111827)"><?= $activeAdopters ?></div>
+      <div style="font-size:.82rem;font-weight:500;color:var(--muted-fg);margin-top:.25rem">Active</div>
+    </div>
   </div>
-  <div class="card" style="flex:1;min-width:140px;padding:1rem 1.25rem;text-align:center">
-    <div style="font-size:1.6rem;font-weight:800;color:hsl(145 42% 35%)"><?= $verifiedIds ?></div>
-    <div style="font-size:.78rem;color:var(--muted-fg);margin-top:.2rem">Verified IDs</div>
+
+  <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="width:38px;height:38px;border-radius:8px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;display:flex;align-items:center;justify-content:center;font-size:.95rem">
+      <i class="fa-solid fa-id-card-clip"></i>
+    </div>
+    <div>
+      <div style="font-size:1.9rem;font-weight:700;line-height:1;color:var(--text-primary, #111827)"><?= $verifiedIds ?></div>
+      <div style="font-size:.82rem;font-weight:500;color:var(--muted-fg);margin-top:.25rem">Verified IDs</div>
+    </div>
   </div>
-  <div class="card" style="flex:1;min-width:140px;padding:1rem 1.25rem;text-align:center">
-    <div style="font-size:1.6rem;font-weight:800;color:hsl(38 80% 40%)"><?= $pendingAdopterId ?></div>
-    <div style="font-size:.78rem;color:var(--muted-fg);margin-top:.2rem">Pending ID Review</div>
+
+  <div class="stat-card" style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.2rem;display:flex;flex-direction:column;gap:.9rem;box-shadow:0 1px 3px rgba(0,0,0,.06)">
+    <div style="width:38px;height:38px;border-radius:8px;background:#fff7ed;color:#ea580c;border:1px solid #fed7aa;display:flex;align-items:center;justify-content:center;font-size:.95rem">
+      <i class="fa-solid fa-clock"></i>
+    </div>
+    <div>
+      <div style="font-size:1.9rem;font-weight:700;line-height:1;color:var(--text-primary, #111827)"><?= $pendingAdopterId ?></div>
+      <div style="font-size:.82rem;font-weight:500;color:var(--muted-fg);margin-top:.25rem">Pending ID Review</div>
+    </div>
   </div>
+
 </div>
 
 <!-- Filters -->
-<form method="get" style="display:flex;gap:.75rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:flex-end">
+<form method="get" style="margin-bottom:1.5rem">
   <input type="hidden" name="tab" value="adopters">
-  <div style="flex:1;min-width:200px">
-    <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">Search</label>
-    <input name="aq" type="text" placeholder="Name or email…" value="<?= e($adopterSearch) ?>">
-  </div>
-  <div>
-    <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">Account Status</label>
-    <select name="astatus">
-      <option value=""       <?= $adopterStatus === ''         ? 'selected' : '' ?>>All</option>
-      <option value="active" <?= $adopterStatus === 'active'   ? 'selected' : '' ?>>Active</option>
-      <option value="inactive" <?= $adopterStatus === 'inactive' ? 'selected' : '' ?>>Blocked</option>
-    </select>
-  </div>
-  <div>
-    <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">ID Status</label>
-    <select name="aid">
-      <option value=""         <?= $adopterIdSt === ''         ? 'selected' : '' ?>>All</option>
-      <option value="pending"  <?= $adopterIdSt === 'pending'  ? 'selected' : '' ?>>Pending</option>
-      <option value="verified" <?= $adopterIdSt === 'verified' ? 'selected' : '' ?>>Verified</option>
-      <option value="rejected" <?= $adopterIdSt === 'rejected' ? 'selected' : '' ?>>Rejected</option>
-      <option value="none"     <?= $adopterIdSt === 'none'     ? 'selected' : '' ?>>No ID</option>
-    </select>
-  </div>
-  <div style="display:flex;gap:.5rem">
-    <button class="btn btn-secondary" type="submit">Filter</button>
-    <a class="btn btn-ghost" href="?tab=adopters">Reset</a>
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;align-items:flex-end">
+    <div style="flex:2;min-width:180px">
+      <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">Search</label>
+      <input name="aq" type="text" placeholder="Name or email…" value="<?= e($adopterSearch) ?>" style="width:100%;box-sizing:border-box">
+    </div>
+    <div style="flex:1;min-width:130px">
+      <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">Account Status</label>
+      <select name="astatus" style="width:100%;box-sizing:border-box">
+        <option value=""       <?= $adopterStatus === ''         ? 'selected' : '' ?>>All</option>
+        <option value="active" <?= $adopterStatus === 'active'   ? 'selected' : '' ?>>Active</option>
+        <option value="inactive" <?= $adopterStatus === 'inactive' ? 'selected' : '' ?>>Blocked</option>
+      </select>
+    </div>
+    <div style="flex:1;min-width:130px">
+      <label style="font-size:.78rem;font-weight:700;display:block;margin-bottom:.3rem">ID Status</label>
+      <select name="aid" style="width:100%;box-sizing:border-box">
+        <option value=""         <?= $adopterIdSt === ''         ? 'selected' : '' ?>>All</option>
+        <option value="pending"  <?= $adopterIdSt === 'pending'  ? 'selected' : '' ?>>Pending</option>
+        <option value="verified" <?= $adopterIdSt === 'verified' ? 'selected' : '' ?>>Verified</option>
+        <option value="rejected" <?= $adopterIdSt === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+        <option value="none"     <?= $adopterIdSt === 'none'     ? 'selected' : '' ?>>No ID</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-shrink:0">
+      <button class="btn btn-secondary" type="submit">Filter</button>
+      <a class="btn btn-ghost" href="?tab=adopters">Reset</a>
+    </div>
   </div>
 </form>
 
@@ -606,7 +746,8 @@ include __DIR__ . '/../../includes/sidebar.php';
 </div>
 <?php else: ?>
 
-<div class="card">
+<!-- Adopters table -->
+<div class="card users-table-wrap">
   <table style="width:100%;border-collapse:collapse">
     <thead>
       <tr style="background:var(--muted);text-align:left">
@@ -643,15 +784,16 @@ include __DIR__ . '/../../includes/sidebar.php';
                       display:grid;place-items:center;font-weight:800;font-size:.85rem;flex-shrink:0">
             <?= strtoupper(mb_substr($a['full_name'], 0, 1)) ?>
           </div>
-          <span style="font-weight:600"><?= e($a['full_name']) ?></span>
+          <span class="td-name" style="font-weight:600"><?= e($a['full_name']) ?></span>
         </div>
       </td>
 
-      <td style="padding:.75rem 1rem"><?= e($a['email']) ?></td>
+      <td style="padding:.75rem 1rem" data-label="Email"><?= e($a['email']) ?></td>
 
-      <td style="padding:.75rem 1rem"><?= $aAccBadge ?></td>
+      <td style="padding:.75rem 1rem" data-label="Account"><?= $aAccBadge ?></td>
 
-      <td style="padding:.75rem 1rem"><?= $aIdBadge ?>
+      <td style="padding:.75rem 1rem" data-label="ID">
+        <?= $aIdBadge ?>
         <?php if ($aIdSt === 'rejected' && !empty($a['id_reject_reason'])): ?>
           <div style="font-size:.72rem;color:hsl(0 55% 40%);margin-top:.2rem;max-width:180px">
             <?= e($a['id_reject_reason']) ?>
@@ -659,17 +801,17 @@ include __DIR__ . '/../../includes/sidebar.php';
         <?php endif; ?>
       </td>
 
-      <td style="padding:.75rem 1rem">
+      <td style="padding:.75rem 1rem" data-label="ID Type">
         <?= !empty($a['id_type']) ? e($a['id_type']) : '<span class="muted small">—</span>' ?>
       </td>
 
-      <td style="padding:.75rem 1rem">
+      <td style="padding:.75rem 1rem" data-label="Joined">
         <?= !empty($a['created_at']) ? date('M j, Y', strtotime($a['created_at'])) : '—' ?>
       </td>
 
       <!-- Actions -->
-      <td style="padding:.75rem 1rem;text-align:center">
-        <div style="display:inline-flex;gap:.4rem;flex-wrap:wrap;align-items:center;justify-content:center">
+      <td style="padding:.75rem 1rem" data-label="Actions">
+        <div class="action-cell" style="justify-content:center">
 
           <!-- Eye icon: only show if there is an uploaded ID document -->
           <?php if (!empty($a['id_document'])): ?>
@@ -689,10 +831,9 @@ include __DIR__ . '/../../includes/sidebar.php';
               <?= csrf_field() ?>
               <input type="hidden" name="action"  value="delete">
               <input type="hidden" name="user_id" value="<?= (int)$a['id'] ?>">
-              <button class="btn btn-sm btn-ghost" type="submit"
-                      data-confirm="Permanently delete this adopter? This cannot be undone."
-                      style="color:var(--danger)" title="Delete">
-                <i class="fa-solid fa-trash"></i>
+              <button class="btn btn-sm btn-danger" type="submit"
+                      data-confirm="Permanently delete this adopter? This cannot be undone.">
+                <i class="fa-solid fa-trash"></i> Delete
               </button>
             </form>
 
@@ -722,10 +863,9 @@ include __DIR__ . '/../../includes/sidebar.php';
               <?= csrf_field() ?>
               <input type="hidden" name="action"  value="delete">
               <input type="hidden" name="user_id" value="<?= (int)$a['id'] ?>">
-              <button class="btn btn-sm btn-ghost" type="submit"
-                      data-confirm="Permanently delete this adopter? This cannot be undone."
-                      style="color:var(--danger)" title="Delete">
-                <i class="fa-solid fa-trash"></i>
+              <button class="btn btn-sm btn-danger" type="submit"
+                      data-confirm="Permanently delete this adopter? This cannot be undone.">
+                <i class="fa-solid fa-trash"></i> Delete
               </button>
             </form>
 
@@ -832,13 +972,14 @@ include __DIR__ . '/../../includes/sidebar.php';
     </form>
 
     <?php else: ?>
-    <!-- Deactivate already-active org -->
+    <!-- Delete active org -->
     <form method="post" style="margin:0">
       <?= csrf_field() ?>
-      <input type="hidden" name="action"  value="toggle">
+      <input type="hidden" name="action"  value="delete">
       <input type="hidden" name="user_id" value="<?= (int)$org['id'] ?>">
-      <button class="btn btn-sm btn-secondary" type="submit">
-        Deactivate
+      <button class="btn btn-sm btn-danger" type="submit"
+              data-confirm="Permanently delete this rescue organization? This cannot be undone.">
+        <i class="fa-solid fa-trash"></i> Delete
       </button>
     </form>
     <?php endif; ?>

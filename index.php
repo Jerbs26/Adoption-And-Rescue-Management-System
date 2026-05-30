@@ -401,14 +401,31 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); backgroun
 .pet-card__status-overlay {
     position: absolute;
     top: .75rem; left: .75rem;
-    font-size: .68rem; font-weight: 700;
-    letter-spacing: .07em; text-transform: uppercase;
-    padding: .3rem .75rem;
+    font-size: .65rem; font-weight: 700;
+    letter-spacing: .08em; text-transform: uppercase;
+    padding: .28rem .75rem;
     border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    width: fit-content;
+    box-shadow: 0 2px 6px rgba(0,0,0,.15);
 }
-.pet-card__status-overlay--available { background: rgba(61,124,62,.12); color: var(--forest-600); }
-.pet-card__status-overlay--adopted   { background: rgba(92,77,58,.12);  color: var(--sand-800); }
-.pet-card__status-overlay--pending   { background: rgba(192,98,58,.12); color: var(--rust-400); }
+.pet-card__status-overlay--available {
+    background: rgba(255,255,255,.92);
+    color: var(--forest-600);
+    border: 1px solid rgba(61,124,62,.25);
+}
+.pet-card__status-overlay--adopted {
+    background: rgba(255,255,255,.92);
+    color: var(--sand-800);
+    border: 1px solid rgba(92,77,58,.2);
+}
+.pet-card__status-overlay--pending {
+    background: rgba(255,255,255,.92);
+    color: var(--rust-400);
+    border: 1px solid rgba(192,98,58,.25);
+}
 .pet-card__body {
     padding: 1.25rem 1.4rem 1.4rem;
     flex: 1; display: flex; flex-direction: column;
@@ -491,7 +508,7 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); backgroun
 
 /* Bottom CTA */
 .lp-cta-band {
-    background: var(--forest-700);
+    background: linear-gradient(160deg, var(--forest-900) 0%, var(--forest-700) 100%);
     padding: 6rem 0;
     position: relative;
     overflow: hidden;
@@ -499,7 +516,9 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); backgroun
 .lp-cta-band__bg {
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse 60% 80% at 90% 50%, rgba(61,124,62,.3) 0%, transparent 70%);
+    background:
+        radial-gradient(ellipse 55% 70% at 95% 50%, rgba(61,124,62,.25) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 50% at 5%  60%, rgba(201,185,154,.08) 0%, transparent 60%);
     pointer-events: none;
 }
 .lp-cta-band__inner {
@@ -519,10 +538,21 @@ body { font-family: 'DM Sans', sans-serif; color: var(--text-primary); backgroun
 .lp-cta-band p {
     font-size: 1rem;
     line-height: 1.7;
-    color: rgba(255,255,255,.65);
+    color: rgba(255,255,255,.6);
     margin-bottom: 2.25rem;
 }
 .lp-cta-band__actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+/* Thin gold/sand separator between CTA band and footer */
+.lp-cta-band::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, hsl(38 40% 60% / .5), transparent);
+}
 
 /* Responsive */
 
