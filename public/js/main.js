@@ -184,8 +184,63 @@
    * All sidebar open/close logic lives here, nowhere else.
    * ══════════════════════════════════════════════════════════ */
 
+  /* ── Inject guaranteed sidebar CSS once ────────────────────
+   * This ensures .sidebar and .sidebar.open always have the
+   * correct behaviour regardless of which stylesheet loads,
+   * overriding any !important inline styles from PHP scripts. */
+  (function injectSidebarCSS() {
+    if ($id('_sidebarFixCSS')) return; // already injected
+    var style = document.createElement('style');
+    style.id = '_sidebarFixCSS';
+    style.textContent = [
+      /* Hidden state — off-screen left */
+      '@media (max-width:900px){',
+      '  #appSidebar:not(.open){',
+      '    position:fixed!important;',
+      '    top:0!important;left:0!important;',
+      '    height:100%!important;',
+      '    width:min(260px,85vw)!important;',
+      '    min-width:0!important;max-width:none!important;',
+      '    transform:translateX(-110%)!important;',
+      '    z-index:300!important;',
+      '    overflow-y:auto!important;',
+      '    transition:transform .25s ease!important;',
+      '    flex:none!important;',
+      '  }',
+      /* Open state — slide in */
+      '  #appSidebar.open{',
+      '    position:fixed!important;',
+      '    top:0!important;left:0!important;',
+      '    height:100%!important;',
+      '    width:min(260px,85vw)!important;',
+      '    min-width:0!important;max-width:none!important;',
+      '    transform:translateX(0)!important;',
+      '    z-index:300!important;',
+      '    overflow-y:auto!important;',
+      '    transition:transform .25s ease!important;',
+      '    flex:none!important;',
+      '  }',
+      /* Overlay */
+      '  #sidebarOverlay.open{',
+      '    display:block!important;',
+      '    position:fixed!important;',
+      '    inset:0!important;',
+      '    background:rgba(0,0,0,.45)!important;',
+      '    z-index:299!important;',
+      '  }',
+      '  #sidebarOverlay:not(.open){display:none!important;}',
+      '}'
+    ].join('\n');
+    document.head.appendChild(style);
+  })();
+
   /* Module-level open/close so Escape handler above can call them */
   function doOpenSidebar(sb, ov, toggleBtn) {
+    /* Strip any conflicting inline styles before applying .open */
+    ['flex','min-width','max-width','width','overflow',
+     'padding','transform','position'].forEach(function(p){
+      sb.style.removeProperty(p);
+    });
     sb.classList.add('open');
     if (ov) { ov.classList.add('open'); ov.removeAttribute('aria-hidden'); }
     if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
@@ -274,6 +329,13 @@
     });
   }
 
-  initSidebar();
+  /* Wait for DOM — sidebar/topbar HTML is rendered by PHP includes
+   * that appear AFTER the <script src="main.js"> tag, so we must
+   * defer until DOMContentLoaded or the elements won't exist yet. */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSidebar);
+  } else {
+    initSidebar();
+  }
 
 })();

@@ -457,6 +457,7 @@ include __DIR__ . '/../../includes/sidebar.php';
     margin: 0 0 .75rem !important;
     padding: 12px 14px 6px !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.06) !important;
+    box-sizing: border-box !important;
   }
 
   /* Each cell: label (::before) + value side-by-side */
@@ -470,6 +471,7 @@ include __DIR__ . '/../../includes/sidebar.php';
     align-items: center !important;
     gap: 10px !important;
     border-bottom: 1px solid var(--border) !important;
+    box-sizing: border-box !important;
   }
 
   .users-table-wrap td:last-child { border-bottom: none !important; }
@@ -500,8 +502,8 @@ include __DIR__ . '/../../includes/sidebar.php';
 
   /* Last cell (actions): full-width buttons */
   .users-table-wrap td:last-child::before { display: none !important; }
-  .users-table-wrap .action-cell { flex-direction: row !important; flex-wrap: nowrap !important; width: 100% !important; }
-  .users-table-wrap .action-cell form { flex: 1 !important; }
+  .users-table-wrap .action-cell { flex-direction: column !important; flex-wrap: wrap !important; width: 100% !important; }
+  .users-table-wrap .action-cell form { width: 100% !important; min-width: 0 !important; }
   .users-table-wrap .action-cell .btn { width: 100% !important; justify-content: center !important; }
 
   /* Rescue org / id-review cards */

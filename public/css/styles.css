@@ -723,9 +723,15 @@ input, textarea, select { font-family: inherit; }
   .sidebar {
     position: fixed; left: 0; top: 0; height: 100%;
     transform: translateX(-100%);
+    /* Fixed = out of flex flow; collapse footprint so main-content fills 100% */
+    flex: 0 0 0 !important;
+    min-width: 0 !important;
   }
   .sidebar.open { transform: translateX(0); }
   .sidebar-toggle { display: flex !important; }
+  /* Main content fills full viewport width */
+  .main-content { width: 100% !important; max-width: 100% !important; }
+  html, body, .dashboard-wrap { overflow-x: hidden !important; }
 }
 
 /* Main content */
@@ -959,6 +965,9 @@ input, textarea, select { font-family: inherit; }
     transform: translateX(-110%);
     box-shadow: 4px 0 24px rgba(0,0,0,.18);
     z-index: 150;
+    /* Fixed = out of flex flow; collapse footprint so main-content fills 100% */
+    flex: 0 0 0 !important;
+    min-width: 0 !important;
   }
   .sidebar.open {
     transform: translateX(0);
